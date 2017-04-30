@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title>NYTart</title>
+        <script
+          src="https://code.jquery.com/jquery-3.2.1.js"
+          integrity="sha256-DZAnKJ/6XZ9si04Hgrsxu/8s717jcIzLy3oi35EouyE="
+          crossorigin="anonymous"></script>
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css" integrity="sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7uwjduW9SVrLvRYooPp2bWYgmgJQIXwl/Sp" crossorigin="anonymous">
+        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+        <script src="https://unpkg.com/react@15.3.2/dist/react.js"></script>
+        <script src="https://unpkg.com/react-dom@15.3.2/dist/react-dom.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-core/5.8.23/browser.min.js"></script>
+        <style media="screen">
+            body {
+                max-width: 980px;
+                margin: auto;
+            }
+            .art {
+                border: 2px solid grey;
+                border-radius: 5px;
+                padding: 7px;
+                margin: 10px;
+            }
+            .art button {
+                margin-right: 10px;
+                margin-top: 10px;
+            }
+        </style>
+
+    </head>
+    <body>
+        <div class="container-fluid">
+
+            <div id="search-modal" class="modal fade info" id="" tabindex="-1" role="dialog" aria-labelledby="" aria-hidden="true">
+              <div class="modal-dialog">
+                <div class="modal-content">
+                  <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                    <h4 class="modal-title" id="">Search the New York Times</h4>
+                  </div>
+                  <div class="modal-body">
+
+                    <form class="" action="/search" method="post">
+
+                        <div class="form-group">
+
+                          <label for="search-terms">Search the New York Times(up)</label>
+                          <input id="search-terms" type="text" class="form-control" value="Star Wars" placeholder="">
+                          <p class="help-block">Enter a name or topic</p>
+
+                          <label for="start-year">Starting at</label>
+                          <input id="start-year" type="text" class="form-control" value="2000" placeholder="">
+                          <p class="help-block">The year to begin searching</p>
+
+                          <label for="end-year">Ending at</label>
+                          <input id="end-year" type="text" class="form-control" value="2017" placeholder="">
+                          <p class="help-block">The ending year for the search</p>
+
+
+                        </div>
+
+                    </form>
+
+                  </div>
+                  <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary" data-dismiss="modal">Search away!</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="jumbotron">
+              <h1>Search the New York Times</h1>
+              <h3>Find articles from as far back as the Jurrasic era</h3>
+              <p></p>
+            </div>
+
+
+            <div class="panel panel-primary">
+              <div class="panel-heading">
+                <h3 class="panel-title">Search results</h3>
+              </div>
+              <div id="search-results" class="panel-body">
+                <p>You got none.</p>
+              </div>
+              <div class="panel-footer">
+
+              </div>
+            </div>
+
+            <div class="panel panel-primary">
+              <div class="panel-heading">
+                <h3 class="panel-title">Saved results</h3>
+              </div>
+              <div id="saved-results" class="panel-body">
+                <p>Nothing saved</p>
+              </div>
+              <div class="panel-footer">
+
+              </div>
+            </div>
+        </div>
+    </body>
+    <script type="text/babel" defer>
+        const apiKey = "8038b91baf03458496aa80e25521465b";
+        const ptrSearchModal = $("#search-modal");
+        let searchTerms, startYear, endYear;
+        let searchResults;
+        let savedArticles = [];
+
+        $(ptrSearchModal).modal({show: true});
+
+        $(ptrSearchModal).on("change", function(e) {
+            e.preventDefault();
+            console.log("Change!")
+            $(ptrSearchModal).modal("toggle");
+
+            searchTerms = $("#search-terms").val();
+            startYear = $("#start-year").val();
+            endYear = $("#end-year").val();
+            console.log( searchTerms, startYear, endYear );
+            getTimes( searchTerms, startYear, endYear );
+
+        });
+
+        function getTimes( searchTerms, startYear, endYear ) {
+            var url = "https://api.nytimes.com/svc/topstories/v2/home.json";
+            url += '?' + $.param({
+              'api-key': "8038b91baf03458496aa80e25521465b"
+            });
+            url += '?' + $.param({
+              'api-key': "8038b91baf03458496aa80e25521465b",
+              'q': "Germany",
+              'begin_date': "19010101",
+              'end_date': "19100101",
+              'sort': "newest",
+              'page': 0
+            });
+            $.ajax({
+              url: "/search",
+              method: 'GET',
+            }).done(function(result) {
+                // console.log( JSON.stringify( result, null, 2 ) );
+                // console.log("DOCS:", result.response.docs);
+                searchResults = result.response.docs;
+                console.log( "searchResults:", searchResults );
+                renderResults( searchResults );
+                setClicks();
+            }).fail(function(err) {
+              throw err;
+            });
+        }
+
+        function setClicks() {
+            $(".art-remove").off("click");
+            $(".art-save").off("click");
+
+            $(".art-remove" ).on("click", function(e) {
+                const target = e.target;
+                $(target).closest(".art").remove();
+            });
+
+            $(".art-save" ).on("click",function(e) {
+                const target = e.target;
+                let id = $(target).closest(".art").attr("id");
+                console.log( "Target ID: ", id )
+                saveArticle( id );
+                $(target).siblings(".art-remove").click()
+            });
+
+        }
+
+        function saveArticle( id ) {
+            //console.log( searchResults[id] );
+            const article = searchResults[id];
+            $.post( {
+                url: "/save",
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify( article )
+            })
+            .done( function( resp ) {
+                // console.log( "Posted to /save: ", resp );
+                savedArticles.push( article );
+                renderSaved( savedArticles );
+                setClicks(); // reset the clicks after moving the stuff.
+                $("#saved-results .art-save").remove();
+            })
+        }
+
+        const Article = React.createClass({
+
+            render: function() {
+                //console.log( "Props:", this.props.article );
+                //console.log( "ID   :", this.props.id );
+                //const { title, abstract, byline, url } = this.props.article;
+                const id = this.props.id;
+                const title = this.props.article.headline.main;
+                const pubDate = this.props.article.pubDate || "No pubDate";
+                const url = this.props.article.web_url;
+                const abstract = this.props.article.snippet;
+                console.log( "id     :", id );
+                console.log( "Title  :", title );
+                console.log( "date   :", pubDate );
+                console.log( "url    :", url );
+                console.log( "abtract:", abstract );
+                return (
+                    <div id={id} key={id} className="art container-fluid">
+                        <div className="row">
+                            <div className="col-md-12">
+                                <div className="art-title"><a href={url}>{title}</a></div>
+                                <div className="art-abstract"><i>{abstract}</i></div>
+                                <div className="art-pubDate">{pubDate}</div>
+                            </div>
+                        </div>
+                        <div className="row">
+                            <div className="col-md-2">
+                                <button type="button" className="art-save btn btn-info">Save!</button>
+                                <button type="button" className="art-remove btn btn-danger">Deep Six</button>
+                            </div>
+                        </div>
+                    </div>
+                );
+            }
+        });
+
+        const Articles = React.createClass({
+            render: function() {
+                console.log( this.props );
+                return (
+                    <div className="art-container">
+                        {this.props.articles.map( (art, i ) => {
+                            return <Article article={art} key={art._id} id={art._id}/>
+                        })
+                    }
+                    </div>
+                )
+            }
+        })
+
+        function renderResults ( data ) {
+            console.log( "renderResults:", JSON.stringify( data, null, 2 ) );
+            ReactDOM.render( <Articles articles={data} />,
+                document.getElementById("search-results")
+            )
+        }
+
+        function renderSaved( data ) {
+            // console.log( "Rendering saved articles. . .")
+            // console.log( "Saved article count = " + savedArticles.length );
+            // console.log( data );
+            ReactDOM.render( <Articles articles={data} />,
+                document.getElementById("saved-results")
+            )
+        }
+    </script>
+</html>
