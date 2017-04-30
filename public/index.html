@@ -55,11 +55,11 @@
                           <p class="help-block">Enter a name or topic</p>
 
                           <label for="start-year">Starting at</label>
-                          <input id="start-year" type="text" class="form-control" value="2000" placeholder="">
+                          <input id="start-year" type="date" class="form-control" value="2000-01-01" placeholder="">
                           <p class="help-block">The year to begin searching</p>
 
                           <label for="end-year">Ending at</label>
-                          <input id="end-year" type="text" class="form-control" value="2017" placeholder="">
+                          <input id="end-year" type="date" class="form-control" value="2017-01-01" placeholder="">
                           <p class="help-block">The ending year for the search</p>
 
 
@@ -69,8 +69,8 @@
 
                   </div>
                   <div class="modal-footer">
-                    <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-                    <button type="button" class="btn btn-primary" data-dismiss="modal">Search away!</button>
+                    <button id="modal-close" type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                    <button id="modal-search" type="button" class="btn btn-primary" data-dismiss="modal">Search away!</button>
                   </div>
                 </div>
               </div>
@@ -111,40 +111,49 @@
     <script type="text/babel" defer>
         const apiKey = "8038b91baf03458496aa80e25521465b";
         const ptrSearchModal = $("#search-modal");
+        const ptrSearchBtn = $("#modal-search");
         let searchTerms, startYear, endYear;
         let searchResults;
         let savedArticles = [];
 
         $(ptrSearchModal).modal({show: true});
 
-        $(ptrSearchModal).on("change", function(e) {
+        getSavedArticles();
+
+        function getSavedArticles() {
+            let url = "/saved";
+            $.ajax({
+              url: url,
+              method: 'GET',
+            }).done(function(result) {
+                console.log( "SAVED ARTICLES:", result );
+                renderSaved( result );
+            }).fail(function(err) {
+              throw err;
+            });
+        }
+
+        $(ptrSearchBtn).on("click", function(e) {
             e.preventDefault();
             console.log("Change!")
             $(ptrSearchModal).modal("toggle");
 
             searchTerms = $("#search-terms").val();
-            startYear = $("#start-year").val();
-            endYear = $("#end-year").val();
+            startYear = $("#start-year").val().replace( /-/g, "" );
+            endYear = $("#end-year").val().replace( /-/g, "" );
+
             console.log( searchTerms, startYear, endYear );
             getTimes( searchTerms, startYear, endYear );
 
         });
 
         function getTimes( searchTerms, startYear, endYear ) {
-            var url = "https://api.nytimes.com/svc/topstories/v2/home.json";
-            url += '?' + $.param({
-              'api-key': "8038b91baf03458496aa80e25521465b"
-            });
-            url += '?' + $.param({
-              'api-key': "8038b91baf03458496aa80e25521465b",
-              'q': "Germany",
-              'begin_date': "19010101",
-              'end_date': "19100101",
-              'sort': "newest",
-              'page': 0
-            });
+            let url = "/search"
+            url += "?searchTerms=" + searchTerms.replace( / /, '+' );
+            url += "&startYear=" + startYear;
+            url += "&endYear=" + endYear;
             $.ajax({
-              url: "/search",
+              url: url,
               method: 'GET',
             }).done(function(result) {
                 // console.log( JSON.stringify( result, null, 2 ) );
@@ -206,14 +215,14 @@
                 //const { title, abstract, byline, url } = this.props.article;
                 const id = this.props.id;
                 const title = this.props.article.headline.main;
-                const pubDate = this.props.article.pubDate || "No pubDate";
+                const pubDate = this.props.article.pub_date || "No pubDate";
                 const url = this.props.article.web_url;
                 const abstract = this.props.article.snippet;
-                console.log( "id     :", id );
-                console.log( "Title  :", title );
-                console.log( "date   :", pubDate );
-                console.log( "url    :", url );
-                console.log( "abtract:", abstract );
+                // console.log( "id     :", id );
+                // console.log( "Title  :", title );
+                // console.log( "date   :", pubDate );
+                // console.log( "url    :", url );
+                // console.log( "abtract:", abstract );
                 return (
                     <div id={id} key={id} className="art container-fluid">
                         <div className="row">
@@ -236,7 +245,7 @@
 
         const Articles = React.createClass({
             render: function() {
-                console.log( this.props );
+                //console.log( this.props );
                 return (
                     <div className="art-container">
                         {this.props.articles.map( (art, i ) => {
@@ -249,7 +258,7 @@
         })
 
         function renderResults ( data ) {
-            console.log( "renderResults:", JSON.stringify( data, null, 2 ) );
+            //console.log( "renderResults:", JSON.stringify( data, null, 2 ) );
             ReactDOM.render( <Articles articles={data} />,
                 document.getElementById("search-results")
             )
@@ -257,8 +266,8 @@
 
         function renderSaved( data ) {
             // console.log( "Rendering saved articles. . .")
-            console.log( "Saved article count = " + savedArticles.length );
-            console.log( "renderSaved:", data );
+            //console.log( "Saved article count = " + savedArticles.length );
+            //console.log( "renderSaved:", data );
             ReactDOM.render( <Articles articles={data} />,
                 document.getElementById("saved-results")
             )
