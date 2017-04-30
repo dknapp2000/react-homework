@@ -28,6 +28,9 @@
                 margin-right: 10px;
                 margin-top: 10px;
             }
+            .modal-footer .btn {
+                display: inline;
+            }
         </style>
 
     </head>
@@ -176,7 +179,10 @@
 
         function saveArticle( id ) {
             //console.log( searchResults[id] );
-            const article = searchResults[id];
+            const article = searchResults.find( art => {
+                console.log( "FIND: ", art._id )
+                return art._id === id
+            })
             $.post( {
                 url: "/save",
                 type: 'POST',
@@ -184,7 +190,7 @@
                 data: JSON.stringify( article )
             })
             .done( function( resp ) {
-                // console.log( "Posted to /save: ", resp );
+                console.log( "Posted to /save: ", resp );
                 savedArticles.push( article );
                 renderSaved( savedArticles );
                 setClicks(); // reset the clicks after moving the stuff.
@@ -234,7 +240,7 @@
                 return (
                     <div className="art-container">
                         {this.props.articles.map( (art, i ) => {
-                            return <Article article={art} key={art._id} id={art._id}/>
+                            return <Article article={art} key={i} id={art._id}/>
                         })
                     }
                     </div>
@@ -251,8 +257,8 @@
 
         function renderSaved( data ) {
             // console.log( "Rendering saved articles. . .")
-            // console.log( "Saved article count = " + savedArticles.length );
-            // console.log( data );
+            console.log( "Saved article count = " + savedArticles.length );
+            console.log( "renderSaved:", data );
             ReactDOM.render( <Articles articles={data} />,
                 document.getElementById("saved-results")
             )
