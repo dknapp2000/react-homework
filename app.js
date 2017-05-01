@@ -71,10 +71,10 @@ app.delete( "/remove/:id", function( req, res ) {
     db.nyt.remove( { 'key': req.params.id },
         function( err, resp ) {
             console.log( "Remove returned." );
-            res.redirect( "https://localhost:3000" );
+            //res.redirect( "https://localhost:3000" );
         }
     );
-    //res.json( { "status": "OK" } )
+    res.json( { "status": "OK" } )
 })
 
 app.listen( port, function() {
