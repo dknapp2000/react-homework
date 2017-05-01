@@ -93,7 +93,7 @@
             <div class="panel panel-primary">
               <div class="panel-heading">
                 <h3 class="panel-title">Search results
-                    <button id="search" type="button" class="btn btn-default btn-mini">Search</button>
+                    <button id="search" type="button" class="btn btn-default btn-mini">Search again</button>
                 </h3>
               </div>
               <div id="search-results" class="panel-body">
@@ -216,11 +216,12 @@
             console.log( "key:", key )
             $.ajax( {
                 url: "/remove/" + key,
-                method: "GET"
+                method: "DELETE"
             })
             .done( function( err ) {
                 getSavedArticles();
             })
+
         };
 
         function saveArticle( id ) {

@@ -66,12 +66,12 @@ app.post( "/save", function( req, res ) {
     res.json( {status: "OK"} );
 })
 
-app.get( "/remove/:id", function( req, res ) {
+app.delete( "/remove/:id", function( req, res ) {
     console.log( req.params );
     db.nyt.remove( { 'key': req.params.id },
         function( err, resp ) {
             console.log( "Remove returned." );
-            res.redirect( "http://localhost:3000" );
+            res.redirect( "https://localhost:3000" );
         }
     );
     //res.json( { "status": "OK" } )
