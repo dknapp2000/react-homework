@@ -42,7 +42,7 @@ app.get( "/search", function( req, res ) {
       },
     }, function(err, response, body) {
       body = JSON.parse(body);
-      console.log(body);
+      //console.log(body);
       res.json( body );
     })
 })
@@ -50,18 +50,30 @@ app.get( "/search", function( req, res ) {
 app.get( "/saved", function( req, res ) {
     db.nyt.find({}, function( err, found ) {
         if ( err ) console.log( err );
-        
-        console.log( "SAVED ARTICLES: ", found );
+
+        // console.log( "SAVED ARTICLES: ", found );
         res.json( found );
     });
 });
 
 app.post( "/save", function( req, res ) {
-    console.log( req.body );
+    //console.log( req.body );
+    console.log( "/save", req.body.pub_date )
     req.body.key = req.body['_id'];
     db.nyt.insert( req.body );
 
     res.json( {status: "OK"} );
+})
+
+app.delete( "/remove/:id", function( req, res ) {
+    console.log( req.params );
+    db.nyt.remove( { 'key': req.params.id },
+        function( err, resp ) {
+            console.log( "Remove returned." );
+            res.redirect( "http://localhost:3000" );
+        }
+    );
+    //res.json( { "status": "OK" } )
 })
 
 app.listen( port, function() {

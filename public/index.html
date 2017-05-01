@@ -25,11 +25,16 @@
                 margin: 10px;
             }
             .art button {
-                margin-right: 10px;
+                margin-right: 0px;
                 margin-top: 10px;
             }
             .modal-footer .btn {
                 display: inline;
+            }
+            #search {
+                height: 35px;
+                position: relative;
+                left: +20px;
             }
         </style>
 
@@ -69,8 +74,10 @@
 
                   </div>
                   <div class="modal-footer">
-                    <button id="modal-close" type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-                    <button id="modal-search" type="button" class="btn btn-primary" data-dismiss="modal">Search away!</button>
+                    <div class="btn-group" role="group">
+                        <button id="modal-close" type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                        <button id="modal-search" type="button" class="btn btn-primary" data-dismiss="modal">Search away!</button>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -85,7 +92,9 @@
 
             <div class="panel panel-primary">
               <div class="panel-heading">
-                <h3 class="panel-title">Search results</h3>
+                <h3 class="panel-title">Search results
+                    <button id="search" type="button" class="btn btn-default btn-mini">Search</button>
+                </h3>
               </div>
               <div id="search-results" class="panel-body">
                 <p>You got none.</p>
@@ -115,10 +124,16 @@
         let searchTerms, startYear, endYear;
         let searchResults;
         let savedArticles = [];
+        let showSearchModal = true;
 
-        $(ptrSearchModal).modal({show: true});
+        $("#search").on("click", function(e) {
+            if ( showSearchModal ) {
+                $(ptrSearchModal).modal({show: true});
+            }
+        });
 
         getSavedArticles();
+        $("#search").click();
 
         function getSavedArticles() {
             let url = "/saved";
@@ -128,9 +143,11 @@
             }).done(function(result) {
                 console.log( "SAVED ARTICLES:", result );
                 renderSaved( result );
+                setClicks();
             }).fail(function(err) {
               throw err;
             });
+            setClicks();
         }
 
         $(ptrSearchBtn).on("click", function(e) {
@@ -168,15 +185,17 @@
         }
 
         function setClicks() {
-            $(".art-remove").off("click");
-            $(".art-save").off("click");
+            $("#search-results .art-remove").off("click");
+            $("#search-results .art-save").off("click");
+            $("#saved-results .art-remove").off("click");
+            $("#saved-results .art-save").off("click");
 
-            $(".art-remove" ).on("click", function(e) {
+            $("#search-results .art-remove" ).on("click", function(e) {
                 const target = e.target;
                 $(target).closest(".art").remove();
             });
 
-            $(".art-save" ).on("click",function(e) {
+            $("#search-results .art-save" ).on("click",function(e) {
                 const target = e.target;
                 let id = $(target).closest(".art").attr("id");
                 console.log( "Target ID: ", id )
@@ -184,7 +203,25 @@
                 $(target).siblings(".art-remove").click()
             });
 
+            $("#saved-results .art-remove").on("click", function(e) {
+                console.log( "Removing article" );
+                removeSavedArticle(e);
+            });
         }
+
+        function removeSavedArticle(e) {
+            let target = e.target;
+            let key = $(target).closest(".art").attr("id");
+            console.log( "target:", target );
+            console.log( "key:", key )
+            $.ajax( {
+                url: "/remove/" + key,
+                method: "DELETE"
+            })
+            .done( function( err ) {
+                getSavedArticles();
+            })
+        };
 
         function saveArticle( id ) {
             //console.log( searchResults[id] );
@@ -201,7 +238,8 @@
             .done( function( resp ) {
                 console.log( "Posted to /save: ", resp );
                 savedArticles.push( article );
-                renderSaved( savedArticles );
+                //renderSaved( savedArticles );
+                getSavedArticles();
                 setClicks(); // reset the clicks after moving the stuff.
                 $("#saved-results .art-save").remove();
             })
@@ -233,9 +271,11 @@
                             </div>
                         </div>
                         <div className="row">
-                            <div className="col-md-2">
-                                <button type="button" className="art-save btn btn-info">Save!</button>
-                                <button type="button" className="art-remove btn btn-danger">Deep Six</button>
+                            <div className="col-md-12">
+                                <div className="btn-group" role="group">
+                                    <button type="button" className="art-save btn btn-info">Save!</button>
+                                    <button type="button" className="art-remove btn btn-danger">Deep Six</button>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -261,7 +301,7 @@
             //console.log( "renderResults:", JSON.stringify( data, null, 2 ) );
             ReactDOM.render( <Articles articles={data} />,
                 document.getElementById("search-results")
-            )
+            );
         }
 
         function renderSaved( data ) {
@@ -270,7 +310,8 @@
             //console.log( "renderSaved:", data );
             ReactDOM.render( <Articles articles={data} />,
                 document.getElementById("saved-results")
-            )
+            );
+            $("#saved-results .art-save").remove();
         }
     </script>
 </html>
