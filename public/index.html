@@ -216,7 +216,7 @@
             console.log( "key:", key )
             $.ajax( {
                 url: "/remove/" + key,
-                method: "DELETE"
+                method: "GET"
             })
             .done( function( err ) {
                 getSavedArticles();
